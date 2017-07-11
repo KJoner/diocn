@@ -4,6 +4,7 @@ import java.io.File;
 
 import org.jsoup.nodes.Document;
 
+import cn.edu.hfut.dmic.webcollector.model.CrawlDatum;
 import cn.edu.hfut.dmic.webcollector.model.CrawlDatums;
 import cn.edu.hfut.dmic.webcollector.model.Page;
 import cn.edu.hfut.dmic.webcollector.plugin.berkeley.BreadthCrawler;
@@ -12,6 +13,8 @@ public class NewsCrawler extends BreadthCrawler {
 
 	//用于保存图片的文件夹
     File downloadDir;
+    
+//    DemoImageCrawler demoimagecrawler;
     /**
      * @param crawlPath crawlPath is the path of the directory which maintains
      * information of this crawler
@@ -38,8 +41,29 @@ public class NewsCrawler extends BreadthCrawler {
         String url = page.getUrl();
         /*判断是否为新闻页，通过正则可以轻松判断*/
         if (page.matchUrl("http://www.coolapk.com/apk/com.*")){
-            System.out.println(page.getUrl().replace("http://www.coolapk.com/apk/", ""));
-        	
+//            System.out.println(page.getUrl().replace("http://www.coolapk.com/apk/", ""));
+            String packageName = page.getUrl().replace("http://www.coolapk.com/apk/", "");
+            System.out.println(packageName+"搜索到了");
+            
+            try {
+                DemoPostCrawler crawler = new DemoPostCrawler("json_crawler", true);
+                crawler.addSeed(new CrawlDatum("http://setting.smartisan.com/app/icon/")
+                        .meta("method", "POST")
+                        .meta("outputData", packageName));
+                crawler.start(3);
+			} catch (Exception e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+				System.out.println(packageName +"下载出错了！-----");
+			}
+//            try {
+//				DemoImageCrawler.down(packageName);
+//			} catch (Exception e) {
+//				// TODO Auto-generated catch block
+//				e.printStackTrace();
+//				System.out.println(packageName +"下载出错了！-----");
+//			}
+            		
         }
         if (page.matchUrl("http://www.coolapk.com/game/com.*")) {
             /*we use jsoup to parse page*/
@@ -52,8 +76,24 @@ public class NewsCrawler extends BreadthCrawler {
 //            System.out.println("URL:\n" + url);
 //            System.out.println("title:\n" + title);
 //            System.out.println("content:\n" + content);
-            System.out.println(page.getUrl().replace("http://www.coolapk.com/game/", ""));
+        	String packageName = page.getUrl().replace("http://www.coolapk.com/game/", "");
+//            System.out.println(page.getUrl().replace("http://www.coolapk.com/game/", ""));
+        	System.out.println(packageName+"搜索到了");
 
+        	try {
+        		String str = DoPost.post("http://setting.smartisan.com/app/icon/","[{\"package\":\""+packageName+"\"}]");
+			} catch (Exception e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+				System.out.println(packageName +"下载出错了！-----");
+			}
+//            try {
+//				DemoImageCrawler.down(packageName);
+//			} catch (Exception e) {
+//				// TODO Auto-generated catch block
+//				e.printStackTrace();
+//				System.out.println(packageName +"下载出错了！-----");
+//			}
             /*如果你想添加新的爬取任务，可以向next中添加爬取任务，
                这就是上文中提到的手动解析*/
             /*WebCollector会自动去掉重复的任务(通过任务的key，默认是URL)，
@@ -63,6 +103,14 @@ public class NewsCrawler extends BreadthCrawler {
               autoParse为true即开启自动解析机制*/
             //next.add("http://xxxxxx.com");
         }
+//        if(page.matchUrl("http://setting.smartisan.com/app/icon.*")){
+//        	
+//        	Document doc = page.doc();
+//        	String str = page.toString();
+//        	System.out.println("111111111111111111111111111111111");
+//        	System.out.println(str);
+//        	System.out.println("222222222222222222222222222222222");
+//        }
     }
 
     public static void main(String[] args) throws Exception {
