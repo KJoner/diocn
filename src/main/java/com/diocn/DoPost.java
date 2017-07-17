@@ -53,7 +53,7 @@ public class DoPost {
     @Test
     public void test(){
     	try {
-			String str = post("http://setting.smartisan.com/app/icon/","[{\"package\":\""+"com.smile.gifmaker"+"\"}]");
+			String str = post("http://setting.smartisan.com/app/icon/","[{\"package\":\""+"com.mojang.minecraftpe"+"\"}]");
 			System.out.println(str);
 			String[] arr = str.split("\"logo\":\"");
 			if(arr.length>1){

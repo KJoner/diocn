@@ -39,23 +39,32 @@ public class NewsCrawler extends BreadthCrawler {
 
     public void visit(Page page, CrawlDatums next) {
         String url = page.getUrl();
+        String imageurl = null;
+        String packageName = null;
         /*判断是否为新闻页，通过正则可以轻松判断*/
         if (page.matchUrl("http://www.coolapk.com/apk/com.*")){
 //            System.out.println(page.getUrl().replace("http://www.coolapk.com/apk/", ""));
-            String packageName = page.getUrl().replace("http://www.coolapk.com/apk/", "");
+            packageName = page.getUrl().replace("http://www.coolapk.com/apk/", "");
             System.out.println(packageName+"搜索到了");
             
-            try {
-                DemoPostCrawler crawler = new DemoPostCrawler("json_crawler", true);
-                crawler.addSeed(new CrawlDatum("http://setting.smartisan.com/app/icon/")
-                        .meta("method", "POST")
-                        .meta("outputData", packageName));
-                crawler.start(3);
+        	try {
+        		imageurl = getimageurl("http://setting.smartisan.com/app/icon/","[{\"package\":\""+packageName+"\"}]");
 			} catch (Exception e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 				System.out.println(packageName +"下载出错了！-----");
 			}
+//            try {
+//                DemoPostCrawler crawler = new DemoPostCrawler("json_crawler", true);
+//                crawler.addSeed(new CrawlDatum("http://setting.smartisan.com/app/icon/")
+//                        .meta("method", "POST")
+//                        .meta("outputData", packageName));
+//                crawler.start(3);
+//			} catch (Exception e) {
+//				// TODO Auto-generated catch block
+//				e.printStackTrace();
+//				System.out.println(packageName +"下载出错了！-----");
+//			}
 //            try {
 //				DemoImageCrawler.down(packageName);
 //			} catch (Exception e) {
@@ -76,12 +85,12 @@ public class NewsCrawler extends BreadthCrawler {
 //            System.out.println("URL:\n" + url);
 //            System.out.println("title:\n" + title);
 //            System.out.println("content:\n" + content);
-        	String packageName = page.getUrl().replace("http://www.coolapk.com/game/", "");
+        	packageName = page.getUrl().replace("http://www.coolapk.com/game/", "");
 //            System.out.println(page.getUrl().replace("http://www.coolapk.com/game/", ""));
         	System.out.println(packageName+"搜索到了");
 
         	try {
-        		String str = DoPost.post("http://setting.smartisan.com/app/icon/","[{\"package\":\""+packageName+"\"}]");
+        		imageurl = getimageurl("http://setting.smartisan.com/app/icon/","[{\"package\":\""+packageName+"\"}]");
 			} catch (Exception e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -111,6 +120,9 @@ public class NewsCrawler extends BreadthCrawler {
 //        	System.out.println(str);
 //        	System.out.println("222222222222222222222222222222222");
 //        }
+        if(imageurl!=null && !imageurl.equals("")) {
+        	ImageDownload.downloadPicture(imageurl, packageName+".png");
+        }
     }
 
     public static void main(String[] args) throws Exception {
@@ -118,17 +130,33 @@ public class NewsCrawler extends BreadthCrawler {
         /*线程数*/
         crawler.setThreads(50);
         /*设置每次迭代中爬取数量的上限*/
-        crawler.setTopN(5000);
+        crawler.setTopN(99999);
         /*设置是否为断点爬取，如果设置为false，任务启动前会清空历史数据。
            如果设置为true，会在已有crawlPath(构造函数的第一个参数)的基础上继
            续爬取。对于耗时较长的任务，很可能需要中途中断爬虫，也有可能遇到
            死机、断电等异常情况，使用断点爬取模式，可以保证爬虫不受这些因素
            的影响，爬虫可以在人为中断、死机、断电等情况出现后，继续以前的任务
            进行爬取。断点爬取默认为false*/
-        //crawler.setResumable(true);
+        crawler.setResumable(true);
         /*开始深度为4的爬取，这里深度和网站的拓扑结构没有任何关系
             可以将深度理解为迭代次数，往往迭代次数越多，爬取的数据越多*/
-        crawler.start(4);
+        crawler.start(99);
+    }
+    
+    public String getimageurl(String path,String params) {
+    	try {
+			String url = DoPost.post(path, params);
+			String[] arr = url.split("\"logo\":\"");
+			if(arr.length>1){
+				String[] arr2 = arr[1].split("\",\"md5\":");
+				System.out.println(arr2[0]);
+				return arr2[0];
+			}
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+    	return null;
     }
 
 }
